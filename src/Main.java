@@ -7,8 +7,8 @@ import java.awt.event.ItemListener;
 public class Main {
     static boolean disabled = false;
     // load an image
-    static Image defaultImage = Toolkit.getDefaultToolkit().getImage("resources/default.png");
-    static Image disabledImage = Toolkit.getDefaultToolkit().getImage("resources/disabled.png");
+    static Image defaultImage = Toolkit.getDefaultToolkit().getImage(Main.class.getResource("default.png"));
+    static Image disabledImage = Toolkit.getDefaultToolkit().getImage(Main.class.getResource("disabled.png"));
 
     public static void main(String[] args) {
         // get the SystemTray instance
