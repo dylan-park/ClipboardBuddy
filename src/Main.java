@@ -26,6 +26,7 @@ public class Main {
     static Deque<String> history = new LinkedList<>();
     static boolean disabled = false;
     static boolean historyOpen = false;
+    static boolean optionsOpen = false;
     static int retryCount = 0;
     // load an image
     static Image defaultImage = Toolkit.getDefaultToolkit().getImage(Main.class.getResource("default.png"));
@@ -39,6 +40,7 @@ public class Main {
         TrayIcon trayIcon = new TrayIcon(defaultImage, "ClipboardBuddy");
         CheckboxMenuItem disableMenuItem = new CheckboxMenuItem("Disable");
         MenuItem historyMenuItem = new MenuItem("History");
+        MenuItem optionsMenuItem = new MenuItem("Options");
         MenuItem quitMenuItem = new MenuItem("Quit");
         // create an action listener to listen for default action executed on the tray icon
         ActionListener listener = e -> {
@@ -66,6 +68,9 @@ public class Main {
         ActionListener historyListener = e -> {
         };
 
+        ActionListener optionsListener = e -> {
+        };
+
         ActionListener quitListener = e -> {
             try {
                 saveDataFile();
@@ -81,6 +86,8 @@ public class Main {
         /// ... add other items
         historyMenuItem.addActionListener(historyListener);
         popup.add(historyMenuItem);
+        optionsMenuItem.addActionListener(optionsListener);
+        popup.add(optionsMenuItem);
         popup.addSeparator();
         quitMenuItem.addActionListener(quitListener);
         popup.add(quitMenuItem);
