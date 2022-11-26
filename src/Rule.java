@@ -5,11 +5,13 @@ public class Rule {
     String name;
     String regex;
     String[] replace;
+    boolean disabled;
 
-    public Rule(String name, String regex, String[] replace) {
+    public Rule(String name, String regex, String[] replace, boolean disabled) {
         this.name = name;
         this.regex = regex;
         this.replace = replace;
+        this.disabled = disabled;
     }
 
     @Override
@@ -17,19 +19,19 @@ public class Rule {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Rule rule = (Rule) o;
-        return name.equals(rule.name) && regex.equals(rule.regex) && Arrays.equals(replace, rule.replace);
+        return disabled == rule.disabled && name.equals(rule.name) && regex.equals(rule.regex) && Arrays.equals(replace, rule.replace);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(name, regex);
+        int result = Objects.hash(name, regex, disabled);
         result = 31 * result + Arrays.hashCode(replace);
         return result;
     }
 
     @Override
     public String toString() {
-        return "Rule{" + "name='" + name + '\'' + ", regex='" + regex + '\'' + ", replace=" + Arrays.toString(replace) + '}';
+        return "Rule{" + "name='" + name + '\'' + ", regex='" + regex + '\'' + ", replace=" + Arrays.toString(replace) + ", disabled=" + disabled + '}';
     }
 
     public String getName() {
@@ -54,5 +56,13 @@ public class Rule {
 
     public void setReplace(String[] replace) {
         this.replace = replace;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 }

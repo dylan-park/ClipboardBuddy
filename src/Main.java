@@ -6,23 +6,26 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Main {
     static String folderPath = System.getenv().get("APPDATA") + "\\ClipboardBuddy";
     static String filePath = folderPath + "\\rules.json";
-    static Rule[] rules;
+    static ArrayList<Rule> rules;
+    static Deque<String> history = new LinkedList<>();
     static boolean disabled = false;
+    static boolean historyOpen = false;
     static int retryCount = 0;
     // load an image
     static Image defaultImage = Toolkit.getDefaultToolkit().getImage(Main.class.getResource("default.png"));
@@ -38,43 +41,38 @@ public class Main {
         MenuItem historyMenuItem = new MenuItem("History");
         MenuItem quitMenuItem = new MenuItem("Quit");
         // create an action listener to listen for default action executed on the tray icon
-        ActionListener listener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                disabled = !disabled;
-                if (disabled) {
-                    disableMenuItem.setState(true);
-                    trayIcon.setImage(disabledImage);
-                }
-                if (!disabled) {
-                    disableMenuItem.setState(false);
-                    trayIcon.setImage(defaultImage);
-                }
+        ActionListener listener = e -> {
+            disabled = !disabled;
+            if (disabled) {
+                disableMenuItem.setState(true);
+                trayIcon.setImage(disabledImage);
+            }
+            if (!disabled) {
+                disableMenuItem.setState(false);
+                trayIcon.setImage(defaultImage);
             }
         };
 
-        ItemListener disabledListener = new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                disabled = !disabled;
-                if (disabled) {
-                    trayIcon.setImage(disabledImage);
-                }
-                if (!disabled) {
-                    trayIcon.setImage(defaultImage);
-                }
+        ItemListener disabledListener = e -> {
+            disabled = !disabled;
+            if (disabled) {
+                trayIcon.setImage(disabledImage);
+            }
+            if (!disabled) {
+                trayIcon.setImage(defaultImage);
             }
         };
 
-        ActionListener historyListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-            }
+        ActionListener historyListener = e -> {
         };
 
-        ActionListener quitListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // TODO: possibly ensure required data is saved before exit
-                System.exit(0);
+        ActionListener quitListener = e -> {
+            try {
+                saveDataFile();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
+            System.exit(0);
         };
         // create a popup menu
         PopupMenu popup = new PopupMenu();
@@ -136,6 +134,10 @@ public class Main {
 
     public static void processClipboard(Clipboard clipboard) throws IOException, UnsupportedFlavorException {
         String input = clipboard.getData(DataFlavor.stringFlavor).toString();
+        if (history.size() == 50) {
+            history.removeLast();
+        }
+        history.addFirst(input);
         for (Rule rule : rules) {
             Pattern pattern = Pattern.compile(rule.getRegex());
             Matcher m = pattern.matcher(input);
@@ -146,6 +148,7 @@ public class Main {
                     output = new StringSelection(input.substring(0, m.start(y + 1)) + rule.getReplace()[y] + input.substring(m.end(y + 1)));
                 }
                 clipboard.setContents(output, output);
+                break;
             }
         }
     }
@@ -161,11 +164,26 @@ public class Main {
         }
     }
 
+    public static void saveDataFile() throws IOException {
+        JSONArray jsonArray = new JSONArray();
+        for (int i = 0; i < rules.size(); i++) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("name", rules.get(i).getName());
+            jsonObject.put("regex", rules.get(i).getRegex());
+            jsonObject.put("replace", rules.get(i).getReplace());
+            jsonObject.put("disabled", rules.get(i).isDisabled());
+            jsonArray.put(jsonObject);
+        }
+        FileWriter file = new FileWriter(filePath);
+        file.write(jsonArray.toString(4));
+        file.close();
+    }
+
     public static void loadDataFile() throws IOException {
         File file = new File(filePath);
         String content = new String(Files.readAllBytes(Paths.get(file.toURI())));
         JSONArray a = new JSONArray(content);
-        rules = new Rule[a.length()];
+        rules = new ArrayList<>();
 
         for (int i = 0; i < a.length(); i++) {
             JSONObject rule = a.getJSONObject(i);
@@ -175,7 +193,7 @@ public class Main {
                 list.add(jsonArray.getString(y));
             }
             String[] stringArray = list.toArray(new String[list.size()]);
-            rules[i] = new Rule(rule.getString("name"), rule.getString("regex"), stringArray);
+            rules.add(new Rule(rule.getString("name"), rule.getString("regex"), stringArray, rule.getBoolean("disabled")));
         }
     }
 }
