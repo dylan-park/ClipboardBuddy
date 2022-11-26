@@ -1,3 +1,6 @@
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -7,24 +10,34 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Main {
+    static String folderPath = System.getenv().get("APPDATA") + "\\ClipboardBuddy";
+    static String filePath = folderPath + "\\rules.json";
+    static Rule[] rules;
     static boolean disabled = false;
     static int retryCount = 0;
     // load an image
     static Image defaultImage = Toolkit.getDefaultToolkit().getImage(Main.class.getResource("default.png"));
     static Image disabledImage = Toolkit.getDefaultToolkit().getImage(Main.class.getResource("disabled.png"));
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        createDataFile();
+        loadDataFile();
         // get the SystemTray instance
         SystemTray tray = SystemTray.getSystemTray();
         TrayIcon trayIcon = new TrayIcon(defaultImage, "ClipboardBuddy");
         CheckboxMenuItem disableMenuItem = new CheckboxMenuItem("Disable");
         MenuItem historyMenuItem = new MenuItem("History");
         MenuItem quitMenuItem = new MenuItem("Quit");
-        // create a action listener to listen for default action executed on the tray icon
+        // create an action listener to listen for default action executed on the tray icon
         ActionListener listener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 disabled = !disabled;
@@ -56,6 +69,7 @@ public class Main {
             public void actionPerformed(ActionEvent e) {
             }
         };
+
         ActionListener quitListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // TODO: possibly ensure required data is saved before exit
@@ -122,9 +136,46 @@ public class Main {
 
     public static void processClipboard(Clipboard clipboard) throws IOException, UnsupportedFlavorException {
         String input = clipboard.getData(DataFlavor.stringFlavor).toString();
-        if (Pattern.compile("http(?:s)?:\\/\\/(?:www)?twitter\\.com\\/([a-zA-Z0-9_]+)\\/status(\\/.*)?").matcher(input).matches()) {
-            StringSelection selection = new StringSelection(input.substring(0, input.indexOf("//") + 2) + "fx" + input.substring(input.indexOf("twitter")));
-            clipboard.setContents(selection, selection);
+        for (Rule rule : rules) {
+            Pattern pattern = Pattern.compile(rule.getRegex());
+            Matcher m = pattern.matcher(input);
+            if (m.find()) {
+                StringSelection output = new StringSelection("");
+                for (int y = 0; y < m.groupCount(); y++) {
+                    // TODO: IMPORTANT, this introduces a bug where only the last replace will be shown in the output. Need a way to marge strings
+                    output = new StringSelection(input.substring(0, m.start(y + 1)) + rule.getReplace()[y] + input.substring(m.end(y + 1)));
+                }
+                clipboard.setContents(output, output);
+            }
+        }
+    }
+
+    public static void createDataFile() throws IOException {
+        File newRulesDir = new File(folderPath);
+        if (!newRulesDir.exists()) {
+            newRulesDir.mkdir();
+        }
+        File newRules = new File(filePath);
+        if (!newRules.exists()) {
+            newRules.createNewFile();
+        }
+    }
+
+    public static void loadDataFile() throws IOException {
+        File file = new File(filePath);
+        String content = new String(Files.readAllBytes(Paths.get(file.toURI())));
+        JSONArray a = new JSONArray(content);
+        rules = new Rule[a.length()];
+
+        for (int i = 0; i < a.length(); i++) {
+            JSONObject rule = a.getJSONObject(i);
+            JSONArray jsonArray = rule.getJSONArray("replace");
+            ArrayList<String> list = new ArrayList<String>();
+            for (int y = 0; y < jsonArray.length(); y++) {
+                list.add(jsonArray.getString(y));
+            }
+            String[] stringArray = list.toArray(new String[list.size()]);
+            rules[i] = new Rule(rule.getString("name"), rule.getString("regex"), stringArray);
         }
     }
 }
