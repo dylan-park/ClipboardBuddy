@@ -13,3 +13,20 @@ The primary use-cases I see from this project include (but are not limited to):
 - Modifying links from Twitter, YouTube, etc, to utilize web services that better display their content (like TwitFix)
 - Redacting known common information from your clipboard
 - Managing a local history of clipboard items
+
+## Usage
+*(An example rules file is avalible [here](https://github.com/dylan-park/ClipboardBuddy/blob/main/examples/rules.json))*
+
+Upon opening for the first time, a data file will be created at %APPDATA%/ClipboardBuddy
+
+The rules file operates using regex matching groups. Each regex rule should have at least one matching group, and there should be an equal number of replacement strings in the replace JSON Array in the order the matches will appear. The layout of the rules file is a JSON Array of JSON Objects. Each object is formatted like so:
+
+```
+{
+"name": "Replace https (Example)",
+"regex": "(http):\/\/",
+"replace": ["https"]
+}
+```
+
+In this example, any string copied to the clipboard that matches the regex will be considered. Then each matching group will fully replace its contents with the replace string at the matching index. The final result will then be applied to the clipboard. This rule specifically will match any string that begins with *http://*, and will replace *http* with *https*. Using these rule sets you can begin to build more complex search and replace based rules for your  clipboard. 
