@@ -11,7 +11,7 @@ ClipboardBuddy is an extension of the idea conceived in my [TwitterFxAdder](http
 The primary use-cases I see from this project include (but are not limited to):
 - Removing tracking/affiliate query strings from known URLs
 - Modifying links from Twitter, YouTube, etc, to utilize web services that better display their content (like TwitFix)
-- Redacting known common information from your clipboard
+- Redacting known personal information from your clipboard
 - Managing a local history of clipboard items
 
 ## Usage
