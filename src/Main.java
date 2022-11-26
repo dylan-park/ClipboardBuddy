@@ -22,6 +22,7 @@ public class Main {
         SystemTray tray = SystemTray.getSystemTray();
         TrayIcon trayIcon = new TrayIcon(defaultImage, "ClipboardBuddy");
         CheckboxMenuItem disableMenuItem = new CheckboxMenuItem("Disable");
+        MenuItem historyMenuItem = new MenuItem("History");
         MenuItem quitMenuItem = new MenuItem("Quit");
         // create a action listener to listen for default action executed on the tray icon
         ActionListener listener = new ActionListener() {
@@ -51,6 +52,10 @@ public class Main {
             }
         };
 
+        ActionListener historyListener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+            }
+        };
         ActionListener quitListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // TODO: possibly ensure required data is saved before exit
@@ -62,6 +67,8 @@ public class Main {
         disableMenuItem.addItemListener(disabledListener);
         popup.add(disableMenuItem);
         /// ... add other items
+        historyMenuItem.addActionListener(historyListener);
+        popup.add(historyMenuItem);
         popup.addSeparator();
         quitMenuItem.addActionListener(quitListener);
         popup.add(quitMenuItem);
