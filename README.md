@@ -25,7 +25,8 @@ The rules file operates using regex matching groups. Each regex rule should have
 {
 "name": "Replace https (Example)",
 "regex": "(http):\/\/",
-"replace": ["https"]
+"replace": ["https"],
+"disabled": false
 }
 ```
 
