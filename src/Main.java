@@ -149,11 +149,14 @@ public class Main {
             Pattern pattern = Pattern.compile(rule.getRegex());
             Matcher m = pattern.matcher(input);
             if (m.find()) {
-                StringSelection output = new StringSelection("");
+                int changedIndex = 0;
+                String workingCopy = input;
                 for (int y = 0; y < m.groupCount(); y++) {
-                    // TODO: IMPORTANT, this introduces a bug where only the last replace will be shown in the output. Need a way to marge strings
-                    output = new StringSelection(input.substring(0, m.start(y + 1)) + rule.getReplace()[y] + input.substring(m.end(y + 1)));
+                    workingCopy = workingCopy.substring(0, m.start(y + 1) + changedIndex) + rule.getReplace()[y] + workingCopy.substring(m.end(y + 1) + changedIndex);
+                    int matchLen = m.end(y + 1) - m.start(y + 1);
+                    changedIndex = changedIndex + (rule.getReplace()[y].length() - matchLen);
                 }
+                StringSelection output = new StringSelection(workingCopy);
                 clipboard.setContents(output, output);
                 break;
             }
