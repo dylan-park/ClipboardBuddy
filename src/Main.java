@@ -35,6 +35,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         createDataFile();
         loadDataFile();
+        saveDataFile();
         // get the SystemTray instance
         SystemTray tray = SystemTray.getSystemTray();
         TrayIcon trayIcon = new TrayIcon(defaultImage, "ClipboardBuddy");
@@ -178,35 +179,39 @@ public class Main {
     }
 
     public static void saveDataFile() throws IOException {
-        JSONArray jsonArray = new JSONArray();
-        for (int i = 0; i < rules.size(); i++) {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("name", rules.get(i).getName());
-            jsonObject.put("regex", rules.get(i).getRegex());
-            jsonObject.put("replace", rules.get(i).getReplace());
-            jsonObject.put("disabled", rules.get(i).isDisabled());
-            jsonArray.put(jsonObject);
+        if (rules.size() > 0) {
+            JSONArray jsonArray = new JSONArray();
+            for (int i = 0; i < rules.size(); i++) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("name", rules.get(i).getName());
+                jsonObject.put("regex", rules.get(i).getRegex());
+                jsonObject.put("replace", rules.get(i).getReplace());
+                jsonObject.put("disabled", rules.get(i).isDisabled());
+                jsonArray.put(jsonObject);
+            }
+            FileWriter file = new FileWriter(filePath);
+            file.write(jsonArray.toString(4));
+            file.close();
         }
-        FileWriter file = new FileWriter(filePath);
-        file.write(jsonArray.toString(4));
-        file.close();
     }
 
     public static void loadDataFile() throws IOException {
         File file = new File(filePath);
         String content = new String(Files.readAllBytes(Paths.get(file.toURI())));
-        JSONArray a = new JSONArray(content);
-        rules = new ArrayList<>();
+        if (content.length() > 0) {
+            JSONArray a = new JSONArray(content);
+            rules = new ArrayList<>();
 
-        for (int i = 0; i < a.length(); i++) {
-            JSONObject rule = a.getJSONObject(i);
-            JSONArray jsonArray = rule.getJSONArray("replace");
-            ArrayList<String> list = new ArrayList<String>();
-            for (int y = 0; y < jsonArray.length(); y++) {
-                list.add(jsonArray.getString(y));
+            for (int i = 0; i < a.length(); i++) {
+                JSONObject rule = a.getJSONObject(i);
+                JSONArray jsonArray = rule.getJSONArray("replace");
+                ArrayList<String> list = new ArrayList<String>();
+                for (int y = 0; y < jsonArray.length(); y++) {
+                    list.add(jsonArray.getString(y));
+                }
+                String[] stringArray = list.toArray(new String[list.size()]);
+                rules.add(new Rule(rule.getString("name"), rule.getString("regex"), stringArray, rule.getBoolean("disabled")));
             }
-            String[] stringArray = list.toArray(new String[list.size()]);
-            rules.add(new Rule(rule.getString("name"), rule.getString("regex"), stringArray, rule.getBoolean("disabled")));
         }
     }
 }
