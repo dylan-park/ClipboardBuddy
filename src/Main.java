@@ -15,8 +15,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,8 +31,13 @@ public class Main {
     // load an image
     static Image defaultImage = Toolkit.getDefaultToolkit().getImage(Main.class.getResource("default.png"));
     static Image disabledImage = Toolkit.getDefaultToolkit().getImage(Main.class.getResource("disabled.png"));
+    static java.util.List<Image> defaultImageIcons = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
+        defaultImageIcons.add(Toolkit.getDefaultToolkit().getImage(Main.class.getResource("default.png")));
+        defaultImageIcons.add(Toolkit.getDefaultToolkit().getImage(Main.class.getResource("default-x32.png")));
+        defaultImageIcons.add(Toolkit.getDefaultToolkit().getImage(Main.class.getResource("default-x64.png")));
+        defaultImageIcons.add(Toolkit.getDefaultToolkit().getImage(Main.class.getResource("default-x128.png")));
         createDataFile();
         loadDataFile();
         saveDataFile();
@@ -70,6 +73,7 @@ public class Main {
 
         ActionListener historyListener = e -> {
             JFrame frame = new JFrame("History");
+            frame.setIconImages(defaultImageIcons);
 //            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             List historyList = new List(history.size());
             for (String s : history) {
@@ -82,6 +86,7 @@ public class Main {
 
         ActionListener optionsListener = e -> {
             JFrame frame = new JFrame("Options");
+            frame.setIconImages(defaultImageIcons);
 //            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setBounds(((int)size.getWidth()/2)-250, ((int)size.getHeight()/2)-250, 500, 500);
             frame.setVisible(true);
