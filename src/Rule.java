@@ -2,10 +2,10 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class Rule {
-    String name;
-    String regex;
-    String[] replace;
-    boolean disabled;
+    private String name;
+    private String regex;
+    private String[] replace;
+    private boolean disabled;
 
     public Rule(String name, String regex, String[] replace, boolean disabled) {
         this.name = name;
