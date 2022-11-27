@@ -1,6 +1,7 @@
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -22,8 +23,9 @@ import java.util.regex.Pattern;
 public class Main {
     static String folderPath = System.getenv().get("APPDATA") + "\\ClipboardBuddy";
     static String filePath = folderPath + "\\rules.json";
+    static Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
     static ArrayList<Rule> rules;
-    static Deque<String> history = new LinkedList<>();
+    static ArrayList<String> history = new ArrayList<>();
     static boolean disabled = false;
     static boolean historyOpen = false;
     static boolean optionsOpen = false;
@@ -67,9 +69,22 @@ public class Main {
         };
 
         ActionListener historyListener = e -> {
+            JFrame frame = new JFrame("History");
+//            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            List historyList = new List(history.size());
+            for (String s : history) {
+                historyList.add(s);
+            }
+            frame.getContentPane().add(historyList, BorderLayout.CENTER);
+            frame.setBounds(((int)size.getWidth()/2)-250, ((int)size.getHeight()/2)-250, 500, 500);
+            frame.setVisible(true);
         };
 
         ActionListener optionsListener = e -> {
+            JFrame frame = new JFrame("Options");
+//            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setBounds(((int)size.getWidth()/2)-250, ((int)size.getHeight()/2)-250, 500, 500);
+            frame.setVisible(true);
         };
 
         ActionListener quitListener = e -> {
@@ -143,9 +158,9 @@ public class Main {
     public static void processClipboard(Clipboard clipboard) throws IOException, UnsupportedFlavorException {
         String input = clipboard.getData(DataFlavor.stringFlavor).toString();
         if (history.size() == 50) {
-            history.removeLast();
+            history.remove(49);
         }
-        history.addFirst(input);
+        history.add(0,input);
         for (Rule rule : rules) {
             if (rule.isDisabled()) {
                 continue;
