@@ -146,6 +146,9 @@ public class Main {
         }
         history.addFirst(input);
         for (Rule rule : rules) {
+            if (rule.isDisabled()) {
+                continue;
+            }
             Pattern pattern = Pattern.compile(rule.getRegex());
             Matcher m = pattern.matcher(input);
             if (m.find()) {
