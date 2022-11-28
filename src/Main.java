@@ -122,7 +122,7 @@ public class Main extends Thread implements ClipboardOwner {
         try {
             tray.add(trayIcon);
         } catch (AWTException e) {
-            System.err.println(e);
+            throw new RuntimeException(e);
         }
 
     }
@@ -224,7 +224,7 @@ public class Main extends Thread implements ClipboardOwner {
             for (int i = 0; i < a.length(); i++) {
                 JSONObject rule = a.getJSONObject(i);
                 JSONArray jsonArray = rule.getJSONArray("replace");
-                ArrayList<String> list = new ArrayList<String>();
+                ArrayList<String> list = new ArrayList<>();
                 for (int y = 0; y < jsonArray.length(); y++) {
                     list.add(jsonArray.getString(y));
                 }
