@@ -138,7 +138,7 @@ public class Main extends Thread implements ClipboardOwner {
     public void lostOwnership(Clipboard c, Transferable t) {
 
         try {
-            Main.sleep(250);  //waiting e.g for loading huge elements like word's etc.
+            Main.sleep(1000);  //waiting e.g for loading huge elements like word's etc.
         } catch (Exception e) {
             System.out.println("Exception: " + e);
         }
